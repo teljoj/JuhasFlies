@@ -578,6 +578,134 @@
             font-weight: normal;
         }
 
+        .reviews-browser-modal .modal-content {
+            max-width: 700px;
+        }
+
+        .rating-statistics {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .overall-rating {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .rating-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .rating-breakdown {
+            flex: 1;
+        }
+
+        .rating-info {
+            text-align: center;
+        }
+
+        .rating-stars-large {
+            color: #fbbf24;
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .rating-count-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .star-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .star-label {
+            width: 60px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .star-bar-container {
+            flex: 1;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .star-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .star-count {
+            width: 40px;
+            text-align: right;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .reviews-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .reviews-list-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .no-reviews {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .review-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--surface);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-author-section {
+            flex: 1;
+        }
+
+        .review-count-link {
+            cursor: pointer;
+            color: var(--primary-color);
+            text-decoration: underline;
+            transition: color 0.2s ease;
+        }
+
+        .review-count-link:hover {
+            color: var(--primary-hover);
+        }
+
         .form-actions {
             display: flex;
             gap: 1rem;
@@ -787,6 +915,72 @@
         </div>
     </div>
 
+    <!-- Reviews Browser Modal -->
+    <div class="modal reviews-browser-modal" id="reviews-browser-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Customer Reviews</h2>
+                <p id="reviews-product-name" style="color: var(--text-secondary); font-size: 1rem;"></p>
+            </div>
+            
+            <div class="rating-statistics">
+                <div class="overall-rating">
+                    <div class="rating-info">
+                        <div class="rating-number" id="overall-rating-number">0.0</div>
+                        <div class="rating-stars-large" id="overall-rating-stars">☆☆☆☆☆</div>
+                        <div class="rating-count-text" id="overall-rating-count">0 reviews</div>
+                    </div>
+                    <div class="rating-breakdown">
+                        <div class="star-row">
+                            <span class="star-label">5 stars</span>
+                            <div class="star-bar-container">
+                                <div class="star-bar" id="bar-5" style="width: 0%"></div>
+                            </div>
+                            <span class="star-count" id="count-5">0</span>
+                        </div>
+                        <div class="star-row">
+                            <span class="star-label">4 stars</span>
+                            <div class="star-bar-container">
+                                <div class="star-bar" id="bar-4" style="width: 0%"></div>
+                            </div>
+                            <span class="star-count" id="count-4">0</span>
+                        </div>
+                        <div class="star-row">
+                            <span class="star-label">3 stars</span>
+                            <div class="star-bar-container">
+                                <div class="star-bar" id="bar-3" style="width: 0%"></div>
+                            </div>
+                            <span class="star-count" id="count-3">0</span>
+                        </div>
+                        <div class="star-row">
+                            <span class="star-label">2 stars</span>
+                            <div class="star-bar-container">
+                                <div class="star-bar" id="bar-2" style="width: 0%"></div>
+                            </div>
+                            <span class="star-count" id="count-2">0</span>
+                        </div>
+                        <div class="star-row">
+                            <span class="star-label">1 star</span>
+                            <div class="star-bar-container">
+                                <div class="star-bar" id="bar-1" style="width: 0%"></div>
+                            </div>
+                            <span class="star-count" id="count-1">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="reviews-list">
+                <h3 class="reviews-list-header">All Reviews</h3>
+                <div id="reviews-container"></div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="closeReviewsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification -->
     <div class="notification" id="notification"></div>
 
@@ -923,7 +1117,7 @@
                             <div class="reviews-summary">
                                 <span class="rating-stars">${stars}</span>
                                 <span class="rating-text">${avgRating.toFixed(1)}</span>
-                                <span class="review-count">(${totalReviews} review${totalReviews !== 1 ? 's' : ''})</span>
+                                <span class="review-count review-count-link" onclick="openReviewsModal(${productId})">(${totalReviews} review${totalReviews !== 1 ? 's' : ''})</span>
                             </div>
                             <button class="btn-review" onclick="openReviewModal(${productId})">Add Review</button>
                         </div>
@@ -1214,6 +1408,88 @@
             updateStarDisplay();
         }
 
+        async function openReviewsModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('reviews-product-name').textContent = product.name;
+            document.getElementById('reviews-browser-modal').classList.add('active');
+            
+            // Load reviews and statistics
+            await loadProductReviews(productId);
+        }
+
+        function closeReviewsModal() {
+            document.getElementById('reviews-browser-modal').classList.remove('active');
+        }
+
+        async function loadProductReviews(productId) {
+            try {
+                // Load statistics
+                const statsResponse = await fetch(`/api/products/${productId}/reviews/stats`);
+                const stats = await statsResponse.json();
+                
+                // Load reviews
+                const reviewsResponse = await fetch(`/api/products/${productId}/reviews`);
+                const reviews = await reviewsResponse.json();
+                
+                displayReviewStatistics(stats);
+                displayReviewsList(reviews);
+            } catch (error) {
+                showNotification('Error loading reviews', 'error');
+            }
+        }
+
+        function displayReviewStatistics(stats) {
+            const totalReviews = stats.total_reviews || 0;
+            const avgRating = stats.average_rating || 0;
+            
+            // Update overall rating
+            document.getElementById('overall-rating-number').textContent = avgRating.toFixed(1);
+            document.getElementById('overall-rating-stars').textContent = generateStarRating(avgRating);
+            document.getElementById('overall-rating-count').textContent = `${totalReviews} review${totalReviews !== 1 ? 's' : ''}`;
+            
+            // Update rating bars
+            for (let i = 1; i <= 5; i++) {
+                const count = stats[`${['one', 'two', 'three', 'four', 'five'][i-1]}_star`] || 0;
+                const percentage = totalReviews > 0 ? (count / totalReviews * 100) : 0;
+                
+                document.getElementById(`bar-${i}`).style.width = `${percentage}%`;
+                document.getElementById(`count-${i}`).textContent = count;
+            }
+        }
+
+        function displayReviewsList(reviews) {
+            const container = document.getElementById('reviews-container');
+            
+            if (reviews.length === 0) {
+                container.innerHTML = '<div class="no-reviews">No reviews yet. Be the first to review this product!</div>';
+                return;
+            }
+            
+            container.innerHTML = reviews.map(review => {
+                const date = new Date(review.created_at);
+                const formattedDate = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                
+                return `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-author-section">
+                                <div class="review-author">${escapeHtml(review.reviewer_name || 'Anonymous')}</div>
+                                <div class="review-rating">${generateStarRating(review.rating)}</div>
+                            </div>
+                            <div class="review-date">${formattedDate}</div>
+                        </div>
+                        ${review.comment ? `<div class="review-comment">${escapeHtml(review.comment)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
         function updateStarDisplay() {
             document.querySelectorAll('.star').forEach(star => {
                 const rating = parseInt(star.dataset.rating);
@@ -1283,6 +1559,12 @@
         document.getElementById('review-modal').addEventListener('click', (e) => {
             if (e.target.id === 'review-modal') {
                 closeReviewModal();
+            }
+        });
+
+        document.getElementById('reviews-browser-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'reviews-browser-modal') {
+                closeReviewsModal();
             }
         });
     </script>
