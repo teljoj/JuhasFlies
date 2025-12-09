@@ -1,9 +1,23 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import sqlite3
 import os
+from werkzeug.utils import secure_filename
+import uuid
 
 app = Flask(__name__)
 DATABASE = 'inventory.db'
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Create upload directory if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_db_connection():
     """Create a database connection"""
@@ -24,7 +38,29 @@ def init_db():
             category TEXT NOT NULL,
             quantity INTEGER NOT NULL,
             price REAL NOT NULL,
-            description TEXT
+            description TEXT,
+            image_filename TEXT
+        )
+    ''')
+    
+    # Add image_filename column if it doesn't exist (for existing databases)
+    try:
+        cursor.execute('ALTER TABLE products ADD COLUMN image_filename TEXT')
+        conn.commit()
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
+    
+    # Create reviews table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id INTEGER NOT NULL,
+            rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+            comment TEXT,
+            reviewer_name TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
         )
     ''')
     
@@ -115,9 +151,9 @@ def add_product():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO products (name, category, quantity, price, description)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (data['name'], data['category'], quantity, price, data.get('description', '')))
+        INSERT INTO products (name, category, quantity, price, description, image_filename)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (data['name'], data['category'], quantity, price, data.get('description', ''), data.get('image_filename')))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
@@ -161,7 +197,7 @@ def update_product(product_id):
     # Update product
     cursor.execute('''
         UPDATE products
-        SET name = ?, category = ?, quantity = ?, price = ?, description = ?
+        SET name = ?, category = ?, quantity = ?, price = ?, description = ?, image_filename = ?
         WHERE id = ?
     ''', (
         data.get('name', product['name']),
@@ -169,6 +205,7 @@ def update_product(product_id):
         quantity,
         price,
         data.get('description', product['description']),
+        data.get('image_filename', product['image_filename']),
         product_id
     ))
     conn.commit()
@@ -181,20 +218,160 @@ def delete_product(product_id):
     """Delete a product"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM products WHERE id = ?', (product_id,))
     
-    if cursor.rowcount == 0:
+    # Get product to delete its image
+    product = cursor.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+    
+    if product is None:
         conn.close()
         return jsonify({'error': 'Product not found'}), 404
     
+    # Delete image file if exists
+    if product['image_filename']:
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], product['image_filename'])
+        if os.path.exists(image_path):
+            try:
+                os.remove(image_path)
+            except Exception as e:
+                print(f"Error deleting image: {e}")
+    
+    cursor.execute('DELETE FROM products WHERE id = ?', (product_id,))
     conn.commit()
     conn.close()
     
     return jsonify({'message': 'Product deleted successfully'})
 
+@app.route('/api/upload-image', methods=['POST'])
+def upload_image():
+    """Upload a product image"""
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file provided'}), 400
+    
+    file = request.files['image']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'Invalid file type. Allowed types: png, jpg, jpeg, gif, webp'}), 400
+    
+    # Generate unique filename
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    
+    try:
+        file.save(filepath)
+        return jsonify({
+            'message': 'Image uploaded successfully',
+            'filename': filename,
+            'url': f'/uploads/{filename}'
+        }), 201
+    except Exception as e:
+        return jsonify({'error': f'Failed to save image: {str(e)}'}), 500
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Serve uploaded images"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/api/products/<int:product_id>/reviews', methods=['GET'])
+def get_product_reviews(product_id):
+    """Get all reviews for a specific product"""
+    conn = get_db_connection()
+    reviews = conn.execute(
+        'SELECT * FROM reviews WHERE product_id = ? ORDER BY created_at DESC',
+        (product_id,)
+    ).fetchall()
+    conn.close()
+    
+    return jsonify([dict(row) for row in reviews])
+
+@app.route('/api/products/<int:product_id>/reviews', methods=['POST'])
+def add_review(product_id):
+    """Add a review for a product"""
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON data'}), 400
+    
+    if 'rating' not in data:
+        return jsonify({'error': 'Rating is required'}), 400
+    
+    try:
+        rating = int(data['rating'])
+        if rating < 1 or rating > 5:
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid rating format'}), 400
+    
+    # Check if product exists
+    conn = get_db_connection()
+    product = conn.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+    if product is None:
+        conn.close()
+        return jsonify({'error': 'Product not found'}), 404
+    
+    # Set reviewer name to "Anonymous" if not provided or empty
+    reviewer_name = data.get('reviewer_name', '').strip()
+    if not reviewer_name:
+        reviewer_name = 'Anonymous'
+    
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO reviews (product_id, rating, comment, reviewer_name)
+        VALUES (?, ?, ?, ?)
+    ''', (product_id, rating, data.get('comment', ''), reviewer_name))
+    conn.commit()
+    review_id = cursor.lastrowid
+    conn.close()
+    
+    return jsonify({'id': review_id, 'message': 'Review added successfully'}), 201
+
+@app.route('/api/products/<int:product_id>/reviews/stats', methods=['GET'])
+def get_review_stats(product_id):
+    """Get review statistics for a product"""
+    conn = get_db_connection()
+    
+    stats = conn.execute('''
+        SELECT 
+            COUNT(*) as total_reviews,
+            AVG(rating) as average_rating,
+            SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_star,
+            SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_star,
+            SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_star,
+            SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_star,
+            SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star
+        FROM reviews
+        WHERE product_id = ?
+    ''', (product_id,)).fetchone()
+    
+    conn.close()
+    
+    return jsonify(dict(stats))
+
+@app.route('/api/reviews/<int:review_id>', methods=['DELETE'])
+def delete_review(review_id):
+    """Delete a review"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM reviews WHERE id = ?', (review_id,))
+    
+    if cursor.rowcount == 0:
+        conn.close()
+        return jsonify({'error': 'Review not found'}), 404
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'message': 'Review deleted successfully'})
+
 if __name__ == '__main__':
     # Initialize database on first run
     if not os.path.exists(DATABASE):
+        init_db()
+    else:
+        # Run migration for existing databases
         init_db()
     
     # Set debug mode from environment variable, default to False for security

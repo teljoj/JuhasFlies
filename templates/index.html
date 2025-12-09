@@ -191,11 +191,28 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .product-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-lg);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .product-image.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--text-secondary);
         }
 
         .product-header {
@@ -375,6 +392,192 @@
             min-height: 80px;
         }
 
+        .image-upload-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            display: none;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--background);
+        }
+
+        .file-input-label:hover {
+            border-color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .remove-image-btn {
+            padding: 0.5rem 1rem;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .remove-image-btn.show {
+            display: inline-block;
+        }
+
+        .reviews-section {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid var(--border-color);
+            background: var(--background);
+        }
+
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .reviews-summary {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rating-stars {
+            color: #fbbf24;
+            font-size: 1.25rem;
+        }
+
+        .rating-text {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .review-count {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .btn-review {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-review:hover {
+            background: var(--primary-hover);
+        }
+
+        .review-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--surface);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-author {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .review-date {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .review-rating {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        .review-comment {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.25rem;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #e5e7eb;
+            transition: color 0.2s ease;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+        }
+
+        .anonymous-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .anonymous-option input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .anonymous-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
         .form-actions {
             display: flex;
             gap: 1rem;
@@ -524,9 +727,61 @@
                     <label for="product-description">Description</label>
                     <textarea id="product-description"></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="product-image">Product Image</label>
+                    <div class="image-upload-container">
+                        <img id="image-preview" class="image-preview" alt="Image preview">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="product-image" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp">
+                            <label for="product-image" class="file-input-label">
+                                <span>📷</span>
+                                <span id="file-input-text">Choose an image or drag and drop</span>
+                            </label>
+                        </div>
+                        <button type="button" class="remove-image-btn" id="remove-image-btn" onclick="removeImage()">Remove Image</button>
+                    </div>
+                </div>
                 <div class="form-actions">
                     <button type="button" class="btn" onclick="closeProductModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal" id="review-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Review</h2>
+                <p id="review-product-name" style="color: var(--text-secondary); font-size: 1rem;"></p>
+            </div>
+            <form id="review-form">
+                <div class="form-group">
+                    <label>Rating *</label>
+                    <div class="star-rating" id="star-rating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reviewer-name">Your Name</label>
+                    <input type="text" id="reviewer-name" placeholder="Enter your name">
+                    <div class="anonymous-option">
+                        <input type="checkbox" id="anonymous-check" onchange="toggleAnonymous()">
+                        <label for="anonymous-check">Post as Anonymous</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="review-comment">Comment (optional)</label>
+                    <textarea id="review-comment" placeholder="Share your experience with this product..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" onclick="closeReviewModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
                 </div>
             </form>
         </div>
@@ -538,6 +793,10 @@
     <script>
         let products = [];
         let currentEditId = null;
+        let currentImageFilename = null;
+        let currentReviewProductId = null;
+        let selectedRating = 0;
+        let productReviews = {};
 
         // Load products on page load
         document.addEventListener('DOMContentLoaded', () => {
@@ -549,17 +808,48 @@
             document.getElementById('search-input').addEventListener('input', filterProducts);
             document.getElementById('category-filter').addEventListener('change', filterProducts);
             document.getElementById('product-form').addEventListener('submit', handleProductSubmit);
+            document.getElementById('product-image').addEventListener('change', handleImageSelect);
+            document.getElementById('review-form').addEventListener('submit', handleReviewSubmit);
+            
+            // Star rating click handlers
+            document.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', () => {
+                    selectedRating = parseInt(star.dataset.rating);
+                    updateStarDisplay();
+                });
+            });
         }
 
         async function loadProducts() {
             try {
                 const response = await fetch('/api/products');
                 products = await response.json();
+                
+                // Load reviews for all products
+                await loadAllReviews();
+                
                 updateStats();
                 populateCategoryFilter();
                 displayProducts(products);
             } catch (error) {
                 showNotification('Error loading products', 'error');
+            }
+        }
+
+        async function loadAllReviews() {
+            try {
+                const reviewPromises = products.map(product => 
+                    fetch(`/api/products/${product.id}/reviews/stats`)
+                        .then(res => res.json())
+                        .then(stats => ({ productId: product.id, stats }))
+                );
+                
+                const results = await Promise.all(reviewPromises);
+                results.forEach(({ productId, stats }) => {
+                    productReviews[productId] = stats;
+                });
+            } catch (error) {
+                console.error('Error loading reviews:', error);
             }
         }
 
@@ -584,8 +874,17 @@
                     return '';
                 }
                 
+                const reviewStats = productReviews[productId] || { total_reviews: 0, average_rating: 0 };
+                const avgRating = reviewStats.average_rating || 0;
+                const totalReviews = reviewStats.total_reviews || 0;
+                const stars = generateStarRating(avgRating);
+                
                 return `
                 <div class="product-card">
+                    ${product.image_filename ? 
+                        `<img src="/uploads/${escapeHtml(product.image_filename)}" alt="${escapeHtml(product.name)}" class="product-image">` :
+                        `<div class="product-image placeholder">📦</div>`
+                    }
                     <div class="product-header">
                         <h3>${escapeHtml(product.name)}</h3>
                         <span class="product-category">${escapeHtml(product.category)}</span>
@@ -619,9 +918,37 @@
                             </button>
                         </div>
                     </div>
+                    <div class="reviews-section">
+                        <div class="reviews-header">
+                            <div class="reviews-summary">
+                                <span class="rating-stars">${stars}</span>
+                                <span class="rating-text">${avgRating.toFixed(1)}</span>
+                                <span class="review-count">(${totalReviews} review${totalReviews !== 1 ? 's' : ''})</span>
+                            </div>
+                            <button class="btn-review" onclick="openReviewModal(${productId})">Add Review</button>
+                        </div>
+                    </div>
                 </div>
             `;
             }).join('');
+        }
+
+        function generateStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            let stars = '';
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < fullStars) {
+                    stars += '★';
+                } else if (i === fullStars && hasHalfStar) {
+                    stars += '⯨';
+                } else {
+                    stars += '☆';
+                }
+            }
+            
+            return stars;
         }
 
         function updateStats() {
@@ -664,8 +991,12 @@
 
         function openAddProductModal() {
             currentEditId = null;
+            currentImageFilename = null;
             document.getElementById('modal-title').textContent = 'Add New Product';
             document.getElementById('product-form').reset();
+            document.getElementById('image-preview').classList.remove('show');
+            document.getElementById('remove-image-btn').classList.remove('show');
+            document.getElementById('file-input-text').textContent = 'Choose an image or drag and drop';
             document.getElementById('product-modal').classList.add('active');
         }
 
@@ -674,19 +1005,85 @@
             if (!product) return;
 
             currentEditId = id;
+            currentImageFilename = product.image_filename;
             document.getElementById('modal-title').textContent = 'Edit Product';
             document.getElementById('product-name').value = product.name;
             document.getElementById('product-category').value = product.category;
             document.getElementById('product-quantity').value = product.quantity;
             document.getElementById('product-price').value = product.price;
             document.getElementById('product-description').value = product.description || '';
+            
+            // Show existing image if available
+            const imagePreview = document.getElementById('image-preview');
+            const removeBtn = document.getElementById('remove-image-btn');
+            if (product.image_filename) {
+                imagePreview.src = `/uploads/${product.image_filename}`;
+                imagePreview.classList.add('show');
+                removeBtn.classList.add('show');
+                document.getElementById('file-input-text').textContent = product.image_filename;
+            } else {
+                imagePreview.classList.remove('show');
+                removeBtn.classList.remove('show');
+                document.getElementById('file-input-text').textContent = 'Choose an image or drag and drop';
+            }
+            
             document.getElementById('product-modal').classList.add('active');
         }
 
         function closeProductModal() {
             document.getElementById('product-modal').classList.remove('active');
             document.getElementById('product-form').reset();
+            document.getElementById('image-preview').classList.remove('show');
+            document.getElementById('remove-image-btn').classList.remove('show');
             currentEditId = null;
+            currentImageFilename = null;
+        }
+
+        async function handleImageSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('image-preview');
+                preview.src = event.target.result;
+                preview.classList.add('show');
+                document.getElementById('remove-image-btn').classList.add('show');
+                document.getElementById('file-input-text').textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+
+            // Upload image
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch('/api/upload-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    currentImageFilename = data.filename;
+                    showNotification('Image uploaded successfully');
+                } else {
+                    showNotification(data.error || 'Error uploading image', 'error');
+                    removeImage();
+                }
+            } catch (error) {
+                showNotification('Error uploading image', 'error');
+                removeImage();
+            }
+        }
+
+        function removeImage() {
+            currentImageFilename = null;
+            document.getElementById('product-image').value = '';
+            document.getElementById('image-preview').classList.remove('show');
+            document.getElementById('remove-image-btn').classList.remove('show');
+            document.getElementById('file-input-text').textContent = 'Choose an image or drag and drop';
         }
 
         async function handleProductSubmit(e) {
@@ -697,7 +1094,8 @@
                 category: document.getElementById('product-category').value,
                 quantity: parseInt(document.getElementById('product-quantity').value),
                 price: parseFloat(document.getElementById('product-price').value),
-                description: document.getElementById('product-description').value
+                description: document.getElementById('product-description').value,
+                image_filename: currentImageFilename
             };
 
             try {
@@ -794,10 +1192,97 @@
             return div.innerHTML;
         }
 
+        function openReviewModal(productId) {
+            currentReviewProductId = productId;
+            selectedRating = 0;
+            const product = products.find(p => p.id === productId);
+            
+            if (product) {
+                document.getElementById('review-product-name').textContent = product.name;
+            }
+            
+            document.getElementById('review-form').reset();
+            updateStarDisplay();
+            document.getElementById('review-modal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').classList.remove('active');
+            document.getElementById('review-form').reset();
+            currentReviewProductId = null;
+            selectedRating = 0;
+            updateStarDisplay();
+        }
+
+        function updateStarDisplay() {
+            document.querySelectorAll('.star').forEach(star => {
+                const rating = parseInt(star.dataset.rating);
+                if (rating <= selectedRating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function toggleAnonymous() {
+            const checkbox = document.getElementById('anonymous-check');
+            const nameInput = document.getElementById('reviewer-name');
+            
+            if (checkbox.checked) {
+                nameInput.value = '';
+                nameInput.disabled = true;
+                nameInput.placeholder = 'Posting as Anonymous';
+            } else {
+                nameInput.disabled = false;
+                nameInput.placeholder = 'Enter your name';
+            }
+        }
+
+        async function handleReviewSubmit(e) {
+            e.preventDefault();
+
+            if (selectedRating === 0) {
+                showNotification('Please select a rating', 'error');
+                return;
+            }
+
+            const reviewData = {
+                rating: selectedRating,
+                comment: document.getElementById('review-comment').value,
+                reviewer_name: document.getElementById('reviewer-name').value
+            };
+
+            try {
+                const response = await fetch(`/api/products/${currentReviewProductId}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reviewData)
+                });
+
+                if (response.ok) {
+                    showNotification('Review submitted successfully');
+                    closeReviewModal();
+                    await loadProducts();
+                } else {
+                    const data = await response.json();
+                    showNotification(data.error || 'Error submitting review', 'error');
+                }
+            } catch (error) {
+                showNotification('Error submitting review', 'error');
+            }
+        }
+
         // Close modal when clicking outside
         document.getElementById('product-modal').addEventListener('click', (e) => {
             if (e.target.id === 'product-modal') {
                 closeProductModal();
+            }
+        });
+
+        document.getElementById('review-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'review-modal') {
+                closeReviewModal();
             }
         });
     </script>
