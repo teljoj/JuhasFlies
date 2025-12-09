@@ -95,15 +95,29 @@ def add_product():
     """Add a new product"""
     data = request.get_json()
     
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON data'}), 400
+    
     if not all(k in data for k in ('name', 'category', 'quantity', 'price')):
         return jsonify({'error': 'Missing required fields'}), 400
+    
+    # Validate data types and ranges
+    try:
+        quantity = int(data['quantity'])
+        price = float(data['price'])
+        if quantity < 0:
+            return jsonify({'error': 'Quantity must be non-negative'}), 400
+        if price < 0:
+            return jsonify({'error': 'Price must be non-negative'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid quantity or price format'}), 400
     
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO products (name, category, quantity, price, description)
         VALUES (?, ?, ?, ?, ?)
-    ''', (data['name'], data['category'], data['quantity'], data['price'], data.get('description', '')))
+    ''', (data['name'], data['category'], quantity, price, data.get('description', '')))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
@@ -115,6 +129,9 @@ def update_product(product_id):
     """Update a product"""
     data = request.get_json()
     
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON data'}), 400
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -124,6 +141,23 @@ def update_product(product_id):
         conn.close()
         return jsonify({'error': 'Product not found'}), 404
     
+    # Validate quantity and price if provided
+    quantity = data.get('quantity', product['quantity'])
+    price = data.get('price', product['price'])
+    
+    try:
+        quantity = int(quantity)
+        price = float(price)
+        if quantity < 0:
+            conn.close()
+            return jsonify({'error': 'Quantity must be non-negative'}), 400
+        if price < 0:
+            conn.close()
+            return jsonify({'error': 'Price must be non-negative'}), 400
+    except (ValueError, TypeError):
+        conn.close()
+        return jsonify({'error': 'Invalid quantity or price format'}), 400
+    
     # Update product
     cursor.execute('''
         UPDATE products
@@ -132,8 +166,8 @@ def update_product(product_id):
     ''', (
         data.get('name', product['name']),
         data.get('category', product['category']),
-        data.get('quantity', product['quantity']),
-        data.get('price', product['price']),
+        quantity,
+        price,
         data.get('description', product['description']),
         product_id
     ))

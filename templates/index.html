@@ -576,7 +576,15 @@
             container.style.display = 'grid';
             emptyState.style.display = 'none';
             
-            container.innerHTML = productsToDisplay.map(product => `
+            container.innerHTML = productsToDisplay.map(product => {
+                // Ensure product.id is a valid integer to prevent injection
+                const productId = parseInt(product.id);
+                if (!Number.isInteger(productId)) {
+                    console.error('Invalid product ID:', product.id);
+                    return '';
+                }
+                
+                return `
                 <div class="product-card">
                     <div class="product-header">
                         <h3>${escapeHtml(product.name)}</h3>
@@ -595,24 +603,25 @@
                             </div>
                         </div>
                         <div class="quantity-control">
-                            <button class="quantity-btn" onclick="updateQuantity(${product.id}, -1)">−</button>
+                            <button class="quantity-btn" onclick="updateQuantity(${productId}, -1)">−</button>
                             <input type="number" class="quantity-input" value="${product.quantity}" 
-                                   onchange="setQuantity(${product.id}, this.value)" min="0">
-                            <button class="quantity-btn" onclick="updateQuantity(${product.id}, 1)">+</button>
+                                   onchange="setQuantity(${productId}, this.value)" min="0">
+                            <button class="quantity-btn" onclick="updateQuantity(${productId}, 1)">+</button>
                         </div>
                         <div class="product-actions">
                             <button class="btn btn-primary btn-small" style="flex: 1;" 
-                                    onclick="openEditProductModal(${product.id})">
+                                    onclick="openEditProductModal(${productId})">
                                 ✏️ Edit
                             </button>
                             <button class="btn btn-danger btn-small" 
-                                    onclick="deleteProduct(${product.id})">
+                                    onclick="deleteProduct(${productId})">
                                 🗑️ Delete
                             </button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function updateStats() {
