@@ -1,0 +1,2 @@
+# JuhasFlies
+Vibecoding harjoitus
