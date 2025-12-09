@@ -99,10 +99,19 @@ The application provides a RESTful API:
 
 ## Development
 
-The application runs in debug mode by default. To run in production mode, modify the `app.run()` call in `app.py`:
+The application runs with debug mode disabled by default for security. To enable debug mode for development, set the `FLASK_DEBUG` environment variable:
 
-```python
-app.run(debug=False, host='0.0.0.0', port=5000)
+```bash
+# On Linux/Mac
+export FLASK_DEBUG=true
+python app.py
+
+# On Windows
+set FLASK_DEBUG=true
+python app.py
+```
+
+**Warning**: Never run with debug mode enabled in production as it can allow attackers to run arbitrary code.
 ```
 
 ## License
